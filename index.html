@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏆 World Cup 2026 Predictor</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #06080f; color: #fff; min-height: 100vh; }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #0a1628 0%, #1a0a2e 50%, #0a1628 100%);
+      border-bottom: 1px solid #1a2540;
+      padding: 20px;
+      text-align: center;
+    }
+    .header h1 { font-size: 32px; background: linear-gradient(90deg, #ffd700, #ff6b35, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px; }
+    .header p { color: #555; font-size: 13px; }
+    .wc-badges { display: flex; justify-content: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .wc-badge { padding: 4px 12px; border-radius: 12px; font-size: 11px; border: 1px solid; }
+    .badge-usa { border-color: #3c3b6e; color: #6b8cff; background: rgba(60,59,110,0.2); }
+    .badge-can { border-color: #ff0000; color: #ff6b6b; background: rgba(255,0,0,0.1); }
+    .badge-mex { border-color: #006847; color: #00cc88; background: rgba(0,104,71,0.2); }
+    .badge-date { border-color: #ffd700; color: #ffd700; background: rgba(255,215,0,0.1); }
+    .badge-teams { border-color: #7b2fff; color: #b06fff; background: rgba(123,47,255,0.1); }
+
+    /* Tabs */
+    .tabs { display: flex; background: #0a1020; border-bottom: 1px solid #1a2540; overflow-x: auto; }
+    .tab-btn { padding: 14px 20px; border: none; background: none; color: #555; cursor: pointer; font-size: 13px; white-space: nowrap; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .tab-btn.active { color: #ffd700; border-bottom-color: #ffd700; }
+    .tab-btn:hover { color: #aaa; }
+
+    .tab-content { display: none; padding: 20px; max-width: 1000px; margin: 0 auto; }
+    .tab-content.active { display: block; }
+
+    /* Cards */
+    .card { background: #0d1425; border: 1px solid #1a2540; border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+    .card h2 { font-size: 15px; color: #ffd700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+    /* Inputs */
+    input[type=text], input[type=number], select {
+      width: 100%; padding: 11px 14px;
+      background: #06080f; border: 1px solid #1a2540;
+      border-radius: 8px; color: #fff; font-size: 14px; outline: none;
+    }
+    input:focus, select:focus { border-color: #ffd700; }
+    select option { background: #0d1425; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 11px; color: #444; margin-bottom: 4px; }
+
+    /* Buttons */
+    .btn { padding: 12px 20px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 14px; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-gold { background: linear-gradient(90deg, #ffd700, #ff6b35); color: #000; width: 100%; padding: 14px; font-size: 16px; margin-bottom: 16px; }
+    .btn-blue { background: linear-gradient(90deg, #00c3ff, #7b2fff); color: #fff; width: 100%; padding: 13px; margin-bottom: 12px; }
+
+    /* Loading */
+    .loading { display: none; text-align: center; padding: 24px; color: #555; }
+    .spinner { width: 40px; height: 40px; border: 3px solid #1a2540; border-top-color: #ffd700; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg { display: none; background: rgba(255,60,60,0.08); border: 1px solid #ff3c3c; border-radius: 10px; padding: 12px; color: #ff6b6b; font-size: 13px; margin-bottom: 12px; }
+
+    /* Teams */
+    .team-selector { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; margin-bottom: 20px; }
+    .team-box { background: #06080f; border: 2px solid #1a2540; border-radius: 12px; padding: 16px; text-align: center; transition: border 0.2s; }
+    .team-box:hover { border-color: #ffd700; }
+    .team-flag { font-size: 36px; margin-bottom: 8px; }
+    .team-name-display { font-size: 16px; font-weight: bold; }
+    .team-rank { font-size: 11px; color: #555; }
+    .vs-text { font-size: 24px; color: #333; font-weight: bold; text-align: center; }
+
+    /* Result */
+    .result-mega { text-align: center; padding: 24px; background: #06080f; border-radius: 14px; border: 2px solid #1a2540; margin-bottom: 16px; }
+    .result-mega-emoji { font-size: 64px; margin-bottom: 12px; }
+    .result-mega-score { font-size: 48px; font-weight: bold; color: #ffd700; margin-bottom: 8px; }
+    .result-mega-label { font-size: 20px; color: #aaa; margin-bottom: 16px; }
+
+    /* Probability */
+    .prob-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+    .prob-box { background: #06080f; border: 1px solid #1a2540; border-radius: 10px; padding: 14px; text-align: center; }
+    .prob-pct { font-size: 28px; font-weight: bold; margin-bottom: 4px; }
+    .prob-label { font-size: 11px; color: #555; }
+
+    /* Goal Prediction */
+    .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .goal-box { background: #06080f; border: 2px solid #1a2540; border-radius: 12px; padding: 18px; text-align: center; }
+    .goal-time { font-size: 12px; color: #555; margin-bottom: 8px; }
+    .goal-emoji { font-size: 40px; margin-bottom: 6px; }
+    .goal-label { font-size: 18px; font-weight: bold; }
+
+    /* Teams Table */
+    .teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+    .team-card { background: #06080f; border: 1px solid #1a2540; border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; transition: border 0.2s; }
+    .team-card:hover { border-color: #ffd700; }
+    .team-card .flag { font-size: 28px; margin-bottom: 6px; }
+    .team-card .name { font-size: 12px; font-weight: bold; }
+    .team-card .rank { font-size: 10px; color: #555; margin-top: 2px; }
+    .team-card .group { font-size: 10px; color: #ffd700; margin-top: 2px; }
+
+    /* Schedule */
+    .match-item { display: flex; justify-content: space-between; align-items: center; padding: 14px; background: #06080f; border: 1px solid #1a2540; border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: border 0.2s; }
+    .match-item:hover { border-color: #ffd700; }
+    .match-team { font-size: 14px; font-weight: bold; flex: 1; }
+    .match-team.away { text-align: right; }
+    .match-center { text-align: center; padding: 0 16px; min-width: 100px; }
+    .match-score-text { font-size: 18px; font-weight: bold; color: #ffd700; }
+    .match-date { font-size: 10px; color: #555; margin-top: 2px; }
+    .match-group { font-size: 10px; color: #7b2fff; }
+
+    /* Analysis */
+    .analysis-box { font-size: 13px; color: #666; line-height: 1.8; padding: 16px; background: #06080f; border-radius: 10px; border: 1px solid #1a2540; }
+
+    /* Stats bars */
+    .stat-compare { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .stat-val-l { font-size: 13px; font-weight: bold; color: #ffd700; width: 50px; text-align: right; }
+    .stat-val-r { font-size: 13px; font-weight: bold; color: #7b2fff; width: 50px; }
+    .stat-bar-container { flex: 1; height: 8px; background: #1a2540; border-radius: 4px; overflow: hidden; position: relative; }
+    .stat-bar-l { position: absolute; right: 50%; height: 100%; background: #ffd700; border-radius: 4px 0 0 4px; }
+    .stat-bar-r { position: absolute; left: 50%; height: 100%; background: #7b2fff; border-radius: 0 4px 4px 0; }
+    .stat-name-center { font-size: 11px; color: #444; width: 120px; text-align: center; }
+
+    .section-title { font-size: 12px; color: #444; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+    .divider { border: none; border-top: 1px solid #1a2540; margin: 16px 0; }
+    .disclaimer { text-align: center; color: #222; font-size: 11px; padding: 20px; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>🏆 World Cup 2026 Predictor</h1>
+  <p>Dự đoán kết quả · Tỷ số · Ghi bàn · Powered by OpenGradient AI</p>
+  <div class="wc-badges">
+    <span class="wc-badge badge-date">📅 11/6 – 19/7/2026</span>
+    <span class="wc-badge badge-usa">🇺🇸 USA</span>
+    <span class="wc-badge badge-can">🇨🇦 Canada</span>
+    <span class="wc-badge badge-mex">🇲🇽 Mexico</span>
+    <span class="wc-badge badge-teams">⚽ 48 Đội</span>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('predict')">🔮 Dự đoán trận đấu</button>
+  <button class="tab-btn" onclick="switchTab('schedule')">📅 Lịch thi đấu</button>
+  <button class="tab-btn" onclick="switchTab('teams')">🌍 Đội tuyển</button>
+  <button class="tab-btn" onclick="switchTab('standings')">🏅 Bảng xếp hạng</button>
+</div>
+
+<!-- ===== TAB 1: PREDICT ===== -->
+<div class="tab-content active" id="tab-predict">
+
+  <div class="card">
+    <h2>⚽ Chọn trận đấu</h2>
+
+    <!-- Team Selector -->
+    <div class="team-selector">
+      <div class="team-box" id="homeBox" onclick="openTeamPicker('home')">
+        <div class="team-flag" id="homeFlag">🏳️</div>
+        <div class="team-name-display" id="homeName">Chọn đội nhà</div>
+        <div class="team-rank" id="homeRankDisplay">FIFA Rank: -</div>
+      </div>
+      <div class="vs-text">VS</div>
+      <div class="team-box" id="awayBox" onclick="openTeamPicker('away')">
+        <div class="team-flag" id="awayFlag">🏳️</div>
+        <div class="team-name-display" id="awayName">Chọn đội khách</div>
+        <div class="team-rank" id="awayRankDisplay">FIFA Rank: -</div>
+      </div>
+    </div>
+
+    <!-- Team Picker Modal -->
+    <div id="teamPicker" style="display:none;margin-bottom:16px">
+      <input type="text" id="teamSearch" placeholder="Tìm kiếm đội tuyển..." oninput="filterTeams()" style="margin-bottom:10px">
+      <div class="teams-grid" id="teamPickerGrid" style="max-height:300px;overflow-y:auto"></div>
+    </div>
+
+    <!-- Match Info -->
+    <div class="grid-2">
+      <div class="form-group">
+        <label>📅 Vòng đấu</label>
+        <select id="matchRound">
+          <option>Vòng bảng - Lượt 1</option>
+          <option>Vòng bảng - Lượt 2</option>
+          <option>Vòng bảng - Lượt 3</option>
+          <option>Vòng 32</option>
+          <option>Vòng 16</option>
+          <option>Tứ kết</option>
+          <option>Bán kết</option>
+          <option>Tranh hạng 3</option>
+          <option>Chung kết</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>🏟️ Địa điểm</label>
+        <select id="matchVenue">
+          <option>Los Angeles, USA</option>
+          <option>New York, USA</option>
+          <option>Dallas, USA</option>
+          <option>San Francisco, USA</option>
+          <option>Miami, USA</option>
+          <option>Atlanta, USA</option>
+          <option>Seattle, USA</option>
+          <option>Boston, USA</option>
+          <option>Houston, USA</option>
+          <option>Kansas City, USA</option>
+          <option>Philadelphia, USA</option>
+          <option>Toronto, Canada</option>
+          <option>Vancouver, Canada</option>
+          <option>Mexico City, Mexico</option>
+          <option>Guadalajara, Mexico</option>
+          <option>Monterrey, Mexico</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn btn-gold" onclick="runWCPrediction()">🏆 Dự đoán kết quả World Cup</button>
+  </div>
+
+  <div class="error-msg" id="errorPredict"></div>
+  <div class="loading" id="loadingPredict"><div class="spinner"></div><p>Đang phân tích AI OpenGradient...</p></div>
+
+  <!-- Result -->
+  <div id="predResult" style="display:none">
+
+    <div class="card">
+      <h2>🔮 Kết quả dự đoán</h2>
+
+      <div class="result-mega">
+        <div class="result-mega-emoji" id="resultEmoji">⚽</div>
+        <div class="result-mega-score" id="resultScore">- : -</div>
+        <div class="result-mega-label" id="resultLabel">-</div>
+      </div>
+
+      <!-- Win/Draw/Loss Probability -->
+      <div class="section-title">Xác suất kết quả</div>
+      <div class="prob-grid">
+        <div class="prob-box">
+          <div class="prob-pct" id="probWin" style="color:#ffd700">-</div>
+          <div class="prob-label" id="probWinLabel">Đội nhà thắng</div>
+        </div>
+        <div class="prob-box">
+          <div class="prob-pct" id="probDraw" style="color:#aaa">-</div>
+          <div class="prob-label">Hòa</div>
+        </div>
+        <div class="prob-box">
+          <div class="prob-pct" id="probLoss" style="color:#7b2fff">-</div>
+          <div class="prob-label" id="probLossLabel">Đội khách thắng</div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Goal Prediction -->
+      <div class="section-title">Dự đoán ghi bàn</div>
+      <div class="goal-grid">
+        <div class="goal-box" id="goal15Box">
+          <div class="goal-time">⏱️ 15 phút tới</div>
+          <div class="goal-emoji" id="goal15Emoji">-</div>
+          <div class="goal-label" id="goal15Label">-</div>
+        </div>
+        <div class="goal-box" id="goal30Box">
+          <div class="goal-time">⏱️ 30 phút tới</div>
+          <div class="goal-emoji" id="goal30Emoji">-</div>
+          <div class="goal-label" id="goal30Label">-</div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Team Comparison -->
+      <div class="section-title">So sánh hai đội</div>
+      <div id="teamComparison"></div>
+
+      <hr class="divider">
+
+      <!-- Analysis -->
+      <div class="section-title">Phân tích chi tiết</div>
+      <div class="analysis-box" id="analysisText"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 2: SCHEDULE ===== -->
+<div class="tab-content" id="tab-schedule">
+  <div class="card">
+    <h2>📅 Lịch thi đấu World Cup 2026</h2>
+    <div id="scheduleList"></div>
+  </div>
+</div>
+
+<!-- ===== TAB 3: TEAMS ===== -->
+<div class="tab-content" id="tab-teams">
+  <div class="card">
+    <h2>🌍 48 Đội tuyển tham dự</h2>
+    <input type="text" id="teamFilterInput" placeholder="Tìm kiếm đội tuyển..." oninput="filterAllTeams()" style="margin-bottom:16px">
+    <div class="teams-grid" id="allTeamsGrid"></div>
+  </div>
+</div>
+
+<!-- ===== TAB 4: STANDINGS ===== -->
+<div class="tab-content" id="tab-standings">
+  <div class="card">
+    <h2>🏅 FIFA World Ranking (2026)</h2>
+    <div id="standingsTable"></div>
+  </div>
+</div>
+
+<p class="disclaimer">🏆 World Cup 2026 · OpenGradient AI · Dự đoán mang tính tham khảo thống kê</p>
+
+<script>
+  const MODEL_CID = "gDGIHKLM4ImPt6tPgG4c9GYM5k226hiV-S5GfgJ7fNw";
+  const FOOTBALL_API_KEY = "7866686c39938d2f38803c8d0e6515c8";
+
+  let selectedHome = null;
+  let selectedAway = null;
+  let pickingFor = null;
+
+  // ==================== TEAMS DATA ====================
+  const WC_TEAMS = [
+    // UEFA (16)
+    { name:"France", flag:"🇫🇷", rank:2, titles:2, group:"A", conf:"UEFA" },
+    { name:"England", flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿", rank:4, titles:1, group:"A", conf:"UEFA" },
+    { name:"Spain", flag:"🇪🇸", rank:6, titles:4, group:"B", conf:"UEFA" },
+    { name:"Germany", flag:"🇩🇪", rank:12, titles:4, group:"B", conf:"UEFA" },
+    { name:"Portugal", flag:"🇵🇹", rank:6, titles:0, group:"C", conf:"UEFA" },
+    { name:"Netherlands", flag:"🇳🇱", rank:7, titles:0, group:"C", conf:"UEFA" },
+    { name:"Belgium", flag:"🇧🇪", rank:3, titles:0, group:"D", conf:"UEFA" },
+    { name:"Italy", flag:"🇮🇹", rank:9, titles:4, group:"D", conf:"UEFA" },
+    { name:"Croatia", flag:"🇭🇷", rank:10, titles:0, group:"E", conf:"UEFA" },
+    { name:"Denmark", flag:"🇩🇰", rank:13, titles:0, group:"E", conf:"UEFA" },
+    { name:"Switzerland", flag:"🇨🇭", rank:19, titles:0, group:"F", conf:"UEFA" },
+    { name:"Austria", flag:"🇦🇹", rank:25, titles:0, group:"F", conf:"UEFA" },
+    { name:"Serbia", flag:"🇷🇸", rank:33, titles:0, group:"G", conf:"UEFA" },
+    { name:"Poland", flag:"🇵🇱", rank:28, titles:0, group:"G", conf:"UEFA" },
+    { name:"Ukraine", flag:"🇺🇦", rank:22, titles:0, group:"H", conf:"UEFA" },
+    { name:"Turkey", flag:"🇹🇷", rank:40, titles:0, group:"H", conf:"UEFA" },
+    // CONMEBOL (6)
+    { name:"Brazil", flag:"🇧🇷", rank:5, titles:5, group:"I", conf:"CONMEBOL" },
+    { name:"Argentina", flag:"🇦🇷", rank:1, titles:3, group:"I", conf:"CONMEBOL" },
+    { name:"Uruguay", flag:"🇺🇾", rank:17, titles:2, group:"J", conf:"CONMEBOL" },
+    { name:"Colombia", flag:"🇨🇴", rank:11, titles:0, group:"J", conf:"CONMEBOL" },
+    { name:"Ecuador", flag:"🇪🇨", rank:35, titles:0, group:"K", conf:"CONMEBOL" },
+    { name:"Paraguay", flag:"🇵🇾", rank:60, titles:0, group:"K", conf:"CONMEBOL" },
+    // AFC (8)
+    { name:"Japan", flag:"🇯🇵", rank:18, titles:0, group:"L", conf:"AFC" },
+    { name:"South Korea", flag:"🇰🇷", rank:23, titles:0, group:"L", conf:"AFC" },
+    { name:"Iran", flag:"🇮🇷", rank:21, titles:0, group:"A", conf:"AFC" },
+    { name:"Saudi Arabia", flag:"🇸🇦", rank:56, titles:0, group:"B", conf:"AFC" },
+    { name:"Australia", flag:"🇦🇺", rank:24, titles:0, group:"C", conf:"AFC" },
+    { name:"Qatar", flag:"🇶🇦", rank:37, titles:0, group:"D", conf:"AFC" },
+    { name:"Uzbekistan", flag:"🇺🇿", rank:65, titles:0, group:"E", conf:"AFC" },
+    { name:"Iraq", flag:"🇮🇶", rank:55, titles:0, group:"F", conf:"AFC" },
+    // CAF (9)
+    { name:"Morocco", flag:"🇲🇦", rank:14, titles:0, group:"G", conf:"CAF" },
+    { name:"Senegal", flag:"🇸🇳", rank:20, titles:0, group:"H", conf:"CAF" },
+    { name:"Nigeria", flag:"🇳🇬", rank:38, titles:0, group:"I", conf:"CAF" },
+    { name:"Egypt", flag:"🇪🇬", rank:36, titles:0, group:"J", conf:"CAF" },
+    { name:"Cameroon", flag:"🇨🇲", rank:43, titles:0, group:"K", conf:"CAF" },
+    { name:"Ghana", flag:"🇬🇭", rank:60, titles:0, group:"L", conf:"CAF" },
+    { name:"Algeria", flag:"🇩🇿", rank:30, titles:0, group:"A", conf:"CAF" },
+    { name:"Mali", flag:"🇲🇱", rank:52, titles:0, group:"B", conf:"CAF" },
+    { name:"South Africa", flag:"🇿🇦", rank:58, titles:0, group:"C", conf:"CAF" },
+    // CONCACAF (6)
+    { name:"USA", flag:"🇺🇸", rank:15, titles:0, group:"D", conf:"CONCACAF" },
+    { name:"Mexico", flag:"🇲🇽", rank:16, titles:0, group:"E", conf:"CONCACAF" },
+    { name:"Canada", flag:"🇨🇦", rank:44, titles:0, group:"F", conf:"CONCACAF" },
+    { name:"Costa Rica", flag:"🇨🇷", rank:50, titles:0, group:"G", conf:"CONCACAF" },
+    { name:"Panama", flag:"🇵🇦", rank:70, titles:0, group:"H", conf:"CONCACAF" },
+    { name:"Jamaica", flag:"🇯🇲", rank:48, titles:0, group:"I", conf:"CONCACAF" },
+    // OFC (1)
+    { name:"New Zealand", flag:"🇳🇿", rank:95, titles:0, group:"J", conf:"OFC" },
+    // Playoff
+    { name:"Vietnam", flag:"🇻🇳", rank:116, titles:0, group:"K", conf:"AFC" },
+    { name:"Indonesia", flag:"🇮🇩", rank:129, titles:0, group:"L", conf:"AFC" },
+  ];
+
+  // ==================== INIT ====================
+  window.addEventListener('load', () => {
+    renderAllTeams();
+    renderSchedule();
+    renderStandings();
+    renderTeamPicker();
+  });
+
+  // ==================== TABS ====================
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // ==================== TEAM PICKER ====================
+  function renderTeamPicker() {
+    const grid = document.getElementById('teamPickerGrid');
+    grid.innerHTML = WC_TEAMS.map((t, i) => `
+      <div class="team-card" onclick="selectTeam(${i})">
+        <div class="flag">${t.flag}</div>
+        <div class="name">${t.name}</div>
+        <div class="rank">FIFA #${t.rank}</div>
+      </div>`).join('');
+  }
+
+  function openTeamPicker(side) {
+    pickingFor = side;
+    const picker = document.getElementById('teamPicker');
+    picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+    renderTeamPicker();
+  }
+
+  function filterTeams() {
+    const q = document.getElementById('teamSearch').value.toLowerCase();
+    const filtered = WC_TEAMS.map((t, i) => ({ ...t, i })).filter(t => t.name.toLowerCase().includes(q));
+    document.getElementById('teamPickerGrid').innerHTML = filtered.map(t => `
+      <div class="team-card" onclick="selectTeam(${t.i})">
+        <div class="flag">${t.flag}</div>
+        <div class="name">${t.name}</div>
+        <div class="rank">FIFA #${t.rank}</div>
+      </div>`).join('');
+  }
+
+  function selectTeam(idx) {
+    const t = WC_TEAMS[idx];
+    if (pickingFor === 'home') {
+      selectedHome = t;
+      document.getElementById('homeFlag').textContent = t.flag;
+      document.getElementById('homeName').textContent = t.name;
+      document.getElementById('homeRankDisplay').textContent = `FIFA Rank: #${t.rank}`;
+      document.getElementById('homeBox').style.borderColor = '#ffd700';
+    } else {
+      selectedAway = t;
+      document.getElementById('awayFlag').textContent = t.flag;
+      document.getElementById('awayName').textContent = t.name;
+      document.getElementById('awayRankDisplay').textContent = `FIFA Rank: #${t.rank}`;
+      document.getElementById('awayBox').style.borderColor = '#7b2fff';
+    }
+    document.getElementById('teamPicker').style.display = 'none';
+  }
+
+  // ==================== PREDICTION ====================
+  async function runWCPrediction() {
+    if (!selectedHome || !selectedAway) {
+      document.getElementById('errorPredict').textContent = '⚠️ Vui lòng chọn cả hai đội!';
+      document.getElementById('errorPredict').style.display = 'block';
+      return;
+    }
+    if (selectedHome.name === selectedAway.name) {
+      document.getElementById('errorPredict').textContent = '⚠️ Vui lòng chọn hai đội khác nhau!';
+      document.getElementById('errorPredict').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('errorPredict').style.display = 'none';
+    document.getElementById('predResult').style.display = 'none';
+    document.getElementById('loadingPredict').style.display = 'block';
+
+    const h = selectedHome, a = selectedAway;
+    const homeForm = Math.max(0, 15 - h.rank * 0.1);
+    const awayForm = Math.max(0, 15 - a.rank * 0.1);
+    const h2hHW = Math.floor(Math.random() * 5) + 1;
+    const h2hD  = Math.floor(Math.random() * 4);
+    const h2hAW = Math.floor(Math.random() * 5) + 1;
+
+    const input = [[
+      h.rank, a.rank,
+      h.titles, a.titles,
+      homeForm, awayForm,
+      h2hHW, h2hD, h2hAW,
+      1.5,
+      45, 4, 3, 52, 0.8, 0.6,
+      0, 5, 4, 6
+    ]];
+
+    let resultIdx = 0, scoreIdx = 1, g15Idx = 1, g30Idx = 1;
+
+    try {
+      const res = await fetch("https://api.opengradient.ai/api/v1/model/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model_cid: MODEL_CID, inputs: { float_input: input } })
+      });
+      const data = await res.json();
+      const labels = data?.output_label ?? [];
+      resultIdx = parseInt(labels[0] ?? calcResult(h, a));
+      scoreIdx  = parseInt(labels[1] ?? 1);
+      g15Idx    = parseInt(labels[2] ?? 1);
+      g30Idx    = parseInt(labels[3] ?? 1);
+    } catch {
+      resultIdx = calcResult(h, a);
+      scoreIdx  = calcScore(resultIdx, h);
+      g15Idx    = 1; g30Idx = 1;
+    } finally {
+      document.getElementById('loadingPredict').style.display = 'none';
+    }
+
+    showWCResult(resultIdx, scoreIdx, g15Idx, g30Idx, h, a, h2hHW, h2hD, h2hAW);
+  }
+
+  function calcResult(h, a) {
+    let hScore = 0, aScore = 0;
+    if (h.rank < a.rank - 20) hScore += 3;
+    else if (h.rank < a.rank - 10) hScore += 2;
+    else if (h.rank < a.rank) hScore += 1;
+    else if (a.rank < h.rank - 20) aScore += 3;
+    else if (a.rank < h.rank - 10) aScore += 2;
+    else if (a.rank < h.rank) aScore += 1;
+    if (h.titles > a.titles) hScore += 1;
+    else if (a.titles > h.titles) aScore += 1;
+    hScore += 0.5;
+    const diff = hScore - aScore;
+    return diff >= 2 ? 0 : diff <= -2 ? 2 : 1;
+  }
+
+  function calcScore(result, h) {
+    if (result === 0) return h.rank < 10 ? 2 : 1;
+    if (result === 1) return 3;
+    return 5;
+  }
+
+  function showWCResult(rIdx, sIdx, g15, g30, h, a, h2hHW, h2hD, h2hAW) {
+    const scores = ["0 - 0", "1 - 0", "2 - 0", "1 - 1", "2 - 1", "Khác"];
+    const results = [
+      { emoji:'🏆', label:`${h.name} thắng`, color:'#ffd700', probs:[65,20,15] },
+      { emoji:'🤝', label:'Hòa', color:'#aaa', probs:[30,40,30] },
+      { emoji:'🥇', label:`${a.name} thắng`, color:'#7b2fff', probs:[15,20,65] },
+    ];
+    const goalConfigs = [
+      { emoji:'😴', label:'THẤP', color:'#555' },
+      { emoji:'👀', label:'TRUNG BÌNH', color:'#f7b731' },
+      { emoji:'🔥', label:'CAO', color:'#ff4444' },
+    ];
+
+    const r = results[rIdx] || results[1];
+    const scoreText = rIdx === 0 ? scores[sIdx] : rIdx === 2 ? scores[sIdx].split(' - ').reverse().join(' - ') : scores[sIdx];
+    const g15c = goalConfigs[g15] || goalConfigs[1];
+    const g30c = goalConfigs[g30] || goalConfigs[1];
+
+    document.getElementById('resultEmoji').textContent = r.emoji;
+    document.getElementById('resultScore').textContent = scoreText;
+    document.getElementById('resultScore').style.color = r.color;
+    document.getElementById('resultLabel').textContent = r.label;
+
+    document.getElementById('probWin').textContent = r.probs[0] + '%';
+    document.getElementById('probDraw').textContent = r.probs[1] + '%';
+    document.getElementById('probLoss').textContent = r.probs[2] + '%';
+    document.getElementById('probWinLabel').textContent = `${h.name} thắng`;
+    document.getElementById('probLossLabel').textContent = `${a.name} thắng`;
+
+    document.getElementById('goal15Emoji').textContent = g15c.emoji;
+    document.getElementById('goal15Label').textContent = g15c.label;
+    document.getElementById('goal15Label').style.color = g15c.color;
+    document.getElementById('goal15Box').style.borderColor = g15c.color;
+
+    document.getElementById('goal30Emoji').textContent = g30c.emoji;
+    document.getElementById('goal30Label').textContent = g30c.label;
+    document.getElementById('goal30Label').style.color = g30c.color;
+    document.getElementById('goal30Box').style.borderColor = g30c.color;
+
+    // Comparison
+    const stats = [
+      { name:'FIFA Rank', hVal:`#${h.rank}`, aVal:`#${a.rank}`, hBar: Math.max(10, 100-h.rank), aBar: Math.max(10, 100-a.rank) },
+      { name:'WC Titles', hVal:h.titles, aVal:a.titles, hBar: h.titles*20, aBar: a.titles*20 },
+      { name:'H2H Wins', hVal:h2hHW, aVal:h2hAW, hBar: h2hHW*10, aBar: h2hAW*10 },
+    ];
+    document.getElementById('teamComparison').innerHTML = stats.map(s => `
+      <div class="stat-compare">
+        <div class="stat-val-l">${s.hVal}</div>
+        <div style="flex:1">
+          <div class="stat-bar-container">
+            <div class="stat-bar-l" style="width:${Math.min(s.hBar,50)}%"></div>
+            <div class="stat-bar-r" style="width:${Math.min(s.aBar,50)}%"></div>
+          </div>
+        </div>
+        <div class="stat-name-center">${s.name}</div>
+        <div style="flex:1">
+          <div class="stat-bar-container">
+            <div class="stat-bar-r" style="width:${Math.min(s.aBar,50)}%"></div>
+          </div>
+        </div>
+        <div class="stat-val-r">${s.aVal}</div>
+      </div>`).join('');
+
+    // Analysis
+    document.getElementById('analysisText').innerHTML = `
+      🏆 <strong>${h.name} ${h.flag} vs ${a.name} ${a.flag}</strong><br><br>
+      • FIFA Ranking: ${h.name} <strong>#${h.rank}</strong> · ${a.name} <strong>#${a.rank}</strong><br>
+      • Số lần vô địch WC: ${h.name} <strong>${h.titles} lần</strong> · ${a.name} <strong>${a.titles} lần</strong><br>
+      • Thành tích đối đầu: ${h.name} thắng <strong>${h2hHW}</strong> · Hòa <strong>${h2hD}</strong> · ${a.name} thắng <strong>${h2hAW}</strong><br><br>
+      🔮 <strong>Dự đoán: ${r.label}</strong> với tỷ số dự kiến <strong>${scoreText}</strong><br>
+      ⚽ Xác suất ghi bàn 15 phút tới: <strong>${g15c.label}</strong><br>
+      ⚽ Xác suất ghi bàn 30 phút tới: <strong>${g30c.label}</strong>`;
+
+    document.getElementById('predResult').style.display = 'block';
+    document.getElementById('predResult').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ==================== SCHEDULE ====================
+  function renderSchedule() {
+    const matches = [
+      { home: WC_TEAMS[0], away: WC_TEAMS[1], date: "12/6/2026", time: "21:00", venue: "Los Angeles" },
+      { home: WC_TEAMS[16], away: WC_TEAMS[17], date: "13/6/2026", time: "00:00", venue: "New York" },
+      { home: WC_TEAMS[2], away: WC_TEAMS[3], date: "13/6/2026", time: "03:00", venue: "Dallas" },
+      { home: WC_TEAMS[4], away: WC_TEAMS[5], date: "14/6/2026", time: "21:00", venue: "Miami" },
+      { home: WC_TEAMS[6], away: WC_TEAMS[7], date: "15/6/2026", time: "00:00", venue: "Atlanta" },
+      { home: WC_TEAMS[8], away: WC_TEAMS[9], date: "15/6/2026", time: "03:00", venue: "Seattle" },
+      { home: WC_TEAMS[22], away: WC_TEAMS[23], date: "16/6/2026", time: "21:00", venue: "Toronto" },
+      { home: WC_TEAMS[30], away: WC_TEAMS[31], date: "17/6/2026", time: "00:00", venue: "Mexico City" },
+      { home: WC_TEAMS[39], away: WC_TEAMS[40], date: "18/6/2026", time: "03:00", venue: "Los Angeles" },
+    ];
+
+    document.getElementById('scheduleList').innerHTML = matches.map((m, i) => `
+      <div class="match-item" onclick="quickPredict(${WC_TEAMS.indexOf(m.home)}, ${WC_TEAMS.indexOf(m.away)})">
+        <div class="team-name">${m.home.flag} ${m.home.name}</div>
+        <div class="match-center">
+          <div class="match-score-text">VS</div>
+          <div class="match-date">${m.date} ${m.time}</div>
+          <div class="match-group">📍 ${m.venue}</div>
+        </div>
+        <div class="team-name away">${m.away.name} ${m.away.flag}</div>
+      </div>`).join('');
+  }
+
+  function quickPredict(hIdx, aIdx) {
+    selectedHome = WC_TEAMS[hIdx];
+    selectedAway = WC_TEAMS[aIdx];
+    document.getElementById('homeFlag').textContent = selectedHome.flag;
+    document.getElementById('homeName').textContent = selectedHome.name;
+    document.getElementById('homeRankDisplay').textContent = `FIFA Rank: #${selectedHome.rank}`;
+    document.getElementById('awayFlag').textContent = selectedAway.flag;
+    document.getElementById('awayName').textContent = selectedAway.name;
+    document.getElementById('awayRankDisplay').textContent = `FIFA Rank: #${selectedAway.rank}`;
+    switchTab('predict');
+    document.querySelectorAll('.tab-btn')[0].classList.add('active');
+    runWCPrediction();
+  }
+
+  // ==================== ALL TEAMS ====================
+  function renderAllTeams() {
+    document.getElementById('allTeamsGrid').innerHTML = WC_TEAMS.map((t, i) => `
+      <div class="team-card" onclick="selectFromAll(${i})">
+        <div class="flag">${t.flag}</div>
+        <div class="name">${t.name}</div>
+        <div class="rank">FIFA #${t.rank}</div>
+        <div class="group">Bảng ${t.group} · ${t.conf}</div>
+      </div>`).join('');
+  }
+
+  function filterAllTeams() {
+    const q = document.getElementById('teamFilterInput').value.toLowerCase();
+    const filtered = WC_TEAMS.map((t, i) => ({ ...t, i })).filter(t =>
+      t.name.toLowerCase().includes(q) || t.conf.toLowerCase().includes(q) || t.group.toLowerCase().includes(q)
+    );
+    document.getElementById('allTeamsGrid').innerHTML = filtered.map(t => `
+      <div class="team-card" onclick="selectFromAll(${t.i})">
+        <div class="flag">${t.flag}</div>
+        <div class="name">${t.name}</div>
+        <div class="rank">FIFA #${t.rank}</div>
+        <div class="group">Bảng ${t.group} · ${t.conf}</div>
+      </div>`).join('');
+  }
+
+  function selectFromAll(idx) {
+    if (!selectedHome) {
+      selectedHome = WC_TEAMS[idx];
+      document.getElementById('homeFlag').textContent = selectedHome.flag;
+      document.getElementById('homeName').textContent = selectedHome.name;
+      document.getElementById('homeRankDisplay').textContent = `FIFA Rank: #${selectedHome.rank}`;
+    } else {
+      selectedAway = WC_TEAMS[idx];
+      document.getElementById('awayFlag').textContent = selectedAway.flag;
+      document.getElementById('awayName').textContent = selectedAway.name;
+      document.getElementById('awayRankDisplay').textContent = `FIFA Rank: #${selectedAway.rank}`;
+    }
+    switchTab('predict');
+    document.querySelectorAll('.tab-btn')[0].classList.add('active');
+  }
+
+  // ==================== STANDINGS ====================
+  function renderStandings() {
+    const sorted = [...WC_TEAMS].sort((a, b) => a.rank - b.rank);
+    document.getElementById('standingsTable').innerHTML = `
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="border-bottom:1px solid #1a2540">
+            <th style="padding:10px 8px;text-align:left;font-size:11px;color:#444">#</th>
+            <th style="padding:10px 8px;text-align:left;font-size:11px;color:#444">Đội tuyển</th>
+            <th style="padding:10px 8px;text-align:center;font-size:11px;color:#444">FIFA</th>
+            <th style="padding:10px 8px;text-align:center;font-size:11px;color:#444">🏆</th>
+            <th style="padding:10px 8px;text-align:center;font-size:11px;color:#444">Khu vực</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sorted.map((t, i) => `
+            <tr style="border-bottom:1px solid #0d1425;cursor:pointer" onclick="selectFromAll(${WC_TEAMS.indexOf(t)})" onmouseover="this.style.background='#0d1425'" onmouseout="this.style.background='transparent'">
+              <td style="padding:10px 8px;font-size:13px;color:#555">${i+1}</td>
+              <td style="padding:10px 8px;font-size:14px">${t.flag} <strong>${t.name}</strong></td>
+              <td style="padding:10px 8px;text-align:center;font-size:13px;color:#ffd700">#${t.rank}</td>
+              <td style="padding:10px 8px;text-align:center;font-size:13px">${t.titles > 0 ? '🏆'.repeat(Math.min(t.titles,5)) : '-'}</td>
+              <td style="padding:10px 8px;text-align:center;font-size:11px;color:#7b2fff">${t.conf}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+</script>
+</body>
+</html>
